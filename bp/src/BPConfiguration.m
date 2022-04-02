@@ -151,6 +151,11 @@ struct BPOptions {
     {998, "include-xctest-file", BLUEPILL_BINARY | BP_BINARY, NO, NO, required_argument, NULL, BP_LIST, "xcTestFileToRun", "Include a xctestfile in the set of tests to run (unless specified in `exclude`)."},
     {367, "videos-directory", BLUEPILL_BINARY | BP_BINARY, NO, NO, required_argument, NULL, BP_VALUE | BP_PATH, "videosDirectory",
         "Directory where videos of test runs will be saved. If not provided, videos are not recorded."},
+    {368, "keep-passing-videos", BLUEPILL_BINARY | BP_BINARY, NO, NO, no_argument, "Off", BP_VALUE | BP_BOOL, "keepPassingVideos",
+        "Whether recorded videos should be kept if the test passed. They are deleted by default."},
+    {369, "exclude-xctest-file", BLUEPILL_BINARY | BP_BINARY, NO, NO, required_argument, NULL, BP_LIST, "xcTestFileToSkip",
+            "Exclude a xctestfile in the set of tests to run (takes priority over `include`)."},
+    {370, "include-xctest-file", BLUEPILL_BINARY | BP_BINARY, NO, NO, required_argument, NULL, BP_LIST, "xcTestFileToRun", "Include a xctestfile in the set of tests to run (unless specified in `exclude`)."},
     {0, 0, 0, 0, 0, 0, 0}
 };
 
@@ -499,10 +504,7 @@ static NSUUID *sessionID;
                 if (BPOptions[i].kind & BP_LIST && [value isKindOfClass:[NSArray class]] && (strcmp(@"include".UTF8String, BPOptions[i].name) || strcmp(@"exclude".UTF8String, BPOptions[i].name))) {
                     NSMutableArray *testCases = [NSMutableArray new];
                     for (NSString *testCase in value) {
-                        NSString *trimmedTestName = [BPUtils trimTrailingParanthesesFromTestName:testCase];
-                        if (trimmedTestName == nil) {
-                            continue;
-                        }
+                        NSString *trimmedTestName = [BPUtils removeSwiftArgumentsFromTestName:testCase];
                         [testCases addObject:trimmedTestName];
                     }
                     value = [NSArray arrayWithArray:testCases];
